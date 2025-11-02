@@ -278,13 +278,6 @@ dangerous_powershell_commands = ["Remove-Item", "Stop-Computer"]
 Pull requests are welcome!
 If you find bugs, open an issue with clear reproduction steps.
 
-### Local Development
-
-```bash
-poetry install --with dev
-pre-commit install
-```
-
 ---
 
 ## 🪪 License
