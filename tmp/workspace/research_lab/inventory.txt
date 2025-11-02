@@ -1,0 +1,27 @@
+Research Lab Inventory
+=====================
+
+Computing Equipment:
+- Desktop Workstations: 5 units
+  * Model: Dell Precision 7000
+  * Specs: 32GB RAM, 1TB SSD, RTX 4090
+  * Status: All operational
+
+- Laptop Computers: 8 units
+  * Model: ThinkPad P1 Gen 6
+  * Specs: 16GB RAM, 512GB SSD
+  * Status: 7 operational, 1 in repair
+
+Software Licenses:
+- MATLAB: 10 licenses (expires Dec 2024)
+- Python IDEs: Unlimited (open source)
+- Adobe Creative Suite: 3 licenses
+- Statistical Software: 5 licenses
+
+Laboratory Supplies:
+- USB Drives: 20 units (various sizes)
+- Cables and Adapters: Well stocked
+- Backup Drives: 5 external drives (2TB each)
+- Networking Equipment: 2 switches, 1 router
+
+Last Updated: November 1, 2024
