@@ -1,4 +1,4 @@
-.PHONY: install lint-fix test pre-commit clean
+.PHONY: install lint-fix pre-commit clean
 
 install:
 	uv sync --all-groups
