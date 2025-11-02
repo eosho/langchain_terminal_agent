@@ -5,14 +5,11 @@ install:
 	uv run pre-commit install
 
 lint-fix:
-	find src tests -name "*.py" -type f -exec uv run pyupgrade --py311-plus {} + || true
-	uv run autoflake --recursive --remove-all-unused-imports --remove-unused-variables --in-place src tests
-	uv run isort src tests --profile black
-	uv run black src tests
-	uv run mypy src tests --check-untyped-defs
-
-test:
-	uv run pytest tests
+	find src -name "*.py" -type f -exec uv run pyupgrade --py311-plus {} + || true
+	uv run autoflake --recursive --remove-all-unused-imports --remove-unused-variables --in-place src
+	uv run isort src --profile black
+	uv run black src
+	uv run mypy src --check-untyped-defs
 
 pre-commit:
 	uv run pre-commit run --all-files
