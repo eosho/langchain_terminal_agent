@@ -1,0 +1,53 @@
+[project]
+name = "terminal_agent"
+version = "0.1.0"
+description = "A safe, human-in-the-loop terminal assistant capable of executing Bash and PowerShell commands."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "langchain>=1.0.2",
+  "langgraph>=1.0.2",
+  "pydantic>=2.12.3",
+  "langchain_openai>=1.0.1",
+  "tiktoken>=0.7.0",
+  "typing-extensions>=4.9.0",
+  "python-dotenv>=1.0.0",
+]
+
+[tool.mypy]
+python_version = "3.11"
+
+[tool.pytest.ini_options]
+# Add the project root to the Python path so that tests can import from src
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "autoflake>=2.3.1",
+    "black>=25.9.0",
+    "bump-my-version>=1.2.4",
+    "isort>=7.0.0",
+    "langgraph-cli[inmem]>=0.4.4",
+    "mypy>=1.18.2",
+    "pre-commit>=4.3.0",
+    "pytest>=8.4.1",
+    "pyupgrade>=3.19.1",
+]
+
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/terminal_agent"]
+
+[project.scripts]
+terminal_agent = "terminal_agent.main:agent"
+
+[project.urls]
+Homepage = "https://github.com/eosho/langchain_terminal_agent"
+Documentation = "https://github.com/eosho/langchain_terminal_agent#readme"
+Repository = "https://github.com/eosho/langchain_terminal_agent"
+Issues = "https://github.com/eosho/langchain_terminal_agent/issues"

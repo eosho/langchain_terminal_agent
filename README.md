@@ -79,10 +79,11 @@ cd langchain_terminal_agent
 
 ### 2. Install dependencies
 
-Using [Poetry](https://python-poetry.org/):
+Using [uv](https://docs.astral.sh/uv/getting-started/installation/):
 
 ```bash
-poetry install
+pip install uv
+uv sync
 ```
 
 Or using `pip` directly:
