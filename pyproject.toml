@@ -37,8 +37,12 @@ dev = [
     "pre-commit>=4.3.0",
     "pytest>=8.4.1",
     "pyupgrade>=3.19.1",
+    "pylint>=4.0.2",
+    "ruff>=0.14.3",
 ]
 
+[tool.ruff]
+extend-select = ["W291", "W293"]  # Trailing whitespace + blank lines
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/terminal_agent"]

@@ -17,7 +17,7 @@ import threading
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Dict, Literal, Optional, cast
 
 from langchain.agents.middleware import AgentMiddleware, AgentState
 from langgraph.runtime import Runtime
@@ -139,7 +139,9 @@ class ShellSessionMiddleware(AgentMiddleware):
             for c in self.cfg.startup_cmds:
                 session.run(c)
 
-        resources = state.get("resources") or {}
+        # Cast state to dict for type safety
+        state_dict = cast(Dict[str, Any], state)
+        resources = state_dict.get("resources") or {}
         resources["shell_session"] = resources.get("shell_session", {})
         resources["shell_session"][self.cfg.shell_type] = session
 
@@ -147,7 +149,9 @@ class ShellSessionMiddleware(AgentMiddleware):
 
     def after_agent(self, state: AgentState, runtime: Runtime) -> Dict[str, Any] | None:
         """Cleanup hook after agent completes."""
-        resources = state.get("resources") or {}
+        # Cast state to dict for type safety
+        state_dict = cast(Dict[str, Any], state)
+        resources = state_dict.get("resources") or {}
         sess_map = resources.get("shell_session") or {}
         for sess in sess_map.values():
             try:

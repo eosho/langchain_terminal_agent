@@ -7,4 +7,4 @@ with the LLMFactory at import time.
 from . import provider  # Import to trigger provider registration
 from .base import BaseProvider, LLMFactory, get_llm
 
-__all__ = ["get_llm", "LLMFactory", "BaseProvider"]
+__all__ = ["get_llm", "LLMFactory", "BaseProvider", "provider"]
