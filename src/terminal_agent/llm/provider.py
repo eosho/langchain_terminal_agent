@@ -47,7 +47,7 @@ class OpenAIProvider(BaseProvider):
         logging.debug(f"Initializing OpenAI Chat model: {model}")
 
         return ChatOpenAI(
-            api_key=api_key,    # type: ignore
+            api_key=api_key,  # type: ignore
             model=model,
             **kwargs,
         )
@@ -96,7 +96,7 @@ class AzureOpenAIProvider(BaseProvider):
         logging.debug(f"Initializing Azure OpenAI deployment: {deployment}")
 
         return AzureChatOpenAI(
-            api_key=api_key,    # type: ignore
+            api_key=api_key,  # type: ignore
             azure_endpoint=endpoint,
             azure_deployment=deployment,
             api_version=api_version,
@@ -108,7 +108,7 @@ class AzureOpenAIProvider(BaseProvider):
 def _register_configured_provider():
     """Register only the LLM provider that's configured in settings."""
     provider_name = LLMConfig.provider.lower()
-    
+
     if provider_name == "openai":
         LLMFactory.register_provider("openai", OpenAIProvider)
     elif provider_name == "azure_openai":

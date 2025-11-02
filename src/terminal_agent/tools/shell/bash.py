@@ -71,11 +71,14 @@ class BashCommandsInput(BaseModel):
         return self
 
 
-@tool("bash_tool",
+@tool(
+    "bash_tool",
     description="Execute Bash commands sequentially with a persistent working directory. Uses a persistent session if available; otherwise falls back to subprocess.",
-    args_schema=BashCommandsInput
+    args_schema=BashCommandsInput,
 )
-def bash_tool(commands: List[str], cwd: Optional[str] = None, **kwargs: Any) -> Dict[str, Any]:
+def bash_tool(
+    commands: List[str], cwd: Optional[str] = None, **kwargs: Any
+) -> Dict[str, Any]:
     """Execute Bash commands safely in sequence.
 
     Validates each command against the terminal policy, executes them in a
@@ -108,7 +111,7 @@ def bash_tool(commands: List[str], cwd: Optional[str] = None, **kwargs: Any) -> 
     """
     # Create input object from parameters
     input = BashCommandsInput(commands=commands, cwd=cwd)
-    
+
     # Resolve starting CWD and enforce sandbox root.
     cwd_path = Path(input.cwd) if input.cwd else POLICY.root_dir
     cwd_path = cwd_path.resolve()
@@ -166,7 +169,9 @@ def bash_tool(commands: List[str], cwd: Optional[str] = None, **kwargs: Any) -> 
                 rc = proc.returncode
             except subprocess.TimeoutExpired as e:
                 stdout = (e.stdout.decode() if e.stdout else "").strip()
-                stderr = ((e.stderr.decode() if e.stderr else "") + "\n[TIMEOUT]").strip()
+                stderr = (
+                    (e.stderr.decode() if e.stderr else "") + "\n[TIMEOUT]"
+                ).strip()
                 rc = 124
 
         # Extract output and updated CWD using the marker.

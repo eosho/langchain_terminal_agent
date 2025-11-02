@@ -33,6 +33,7 @@ class ShellSessionConfig:
         read_timeout_sec: Timeout for reading command output.
         startup_cmds: Optional list of commands to pre-run on session start.
     """
+
     shell_type: Literal["bash", "powershell"] = "bash"
     startup_cwd: Path = Path(os.getenv("SHELL_ROOT_DIR", Path.cwd())).resolve()
     read_timeout_sec: float = 5.0
@@ -80,7 +81,7 @@ class _ShellSession:
             return "[session closed]"
 
         # Add a sentinel line so we know where output ends.
-        sentinel = f"__END_{int(time.time()*1000)}__"
+        sentinel = f"__END_{int(time.time() * 1000)}__"
         to_write = f"{command}\necho {sentinel}\n"
         self._proc.stdin.write(to_write)
         self._proc.stdin.flush()
@@ -118,14 +119,20 @@ class ShellSessionMiddleware(AgentMiddleware):
     def __init__(self, cfg: ShellSessionConfig):
         self.cfg = cfg
 
-    def before_agent(self, state: AgentState, runtime: Runtime) -> Dict[str, Any] | None:
+    def before_agent(
+        self, state: AgentState, runtime: Runtime
+    ) -> Dict[str, Any] | None:
         """Start the shell session before the agent loop begins.
 
         Returns:
             Optional state delta; here we attach the session into resources.
         """
         shell_exe = "/bin/bash" if self.cfg.shell_type == "bash" else "pwsh"
-        session = _ShellSession(executable=shell_exe, cwd=self.cfg.startup_cwd, read_timeout_sec=self.cfg.read_timeout_sec)
+        session = _ShellSession(
+            executable=shell_exe,
+            cwd=self.cfg.startup_cwd,
+            read_timeout_sec=self.cfg.read_timeout_sec,
+        )
 
         # Optional startup commands (e.g., set -e, cd, env)
         if self.cfg.startup_cmds:
@@ -141,11 +148,10 @@ class ShellSessionMiddleware(AgentMiddleware):
     def after_agent(self, state: AgentState, runtime: Runtime) -> Dict[str, Any] | None:
         """Cleanup hook after agent completes."""
         resources = state.get("resources") or {}
-        sess_map = (resources.get("shell_session") or {})
+        sess_map = resources.get("shell_session") or {}
         for sess in sess_map.values():
             try:
                 sess.terminate()
             except Exception:
                 pass
         return None
-      

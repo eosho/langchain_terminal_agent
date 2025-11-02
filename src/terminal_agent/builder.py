@@ -6,7 +6,7 @@ constructs a LangChain agent capable of executing validated shell commands
 (Bash and PowerShell).
 
 Shell operations require explicit human approval via a Human-In-The-Loop (HITL)
-middleware configuration. 
+middleware configuration.
 
 Model/provider settings are injected from environment variables
 via :class:`terminal_agent.core.config.AppConfig`.
@@ -20,12 +20,19 @@ from langchain_openai import ChatOpenAI, AzureChatOpenAI
 from langgraph.checkpoint.memory import InMemorySaver
 from langchain.tools import BaseTool
 
-from terminal_agent.middleware.shell_session import ShellSessionMiddleware, ShellSessionConfig
-from terminal_agent.middleware.shell_policy import ShellPolicyMiddleware, ShellPolicyConfig
+from terminal_agent.middleware.shell_session import (
+    ShellSessionMiddleware,
+    ShellSessionConfig,
+)
+from terminal_agent.middleware.shell_policy import (
+    ShellPolicyMiddleware,
+    ShellPolicyConfig,
+)
 from terminal_agent.core.config import AppConfig, LLMConfig, LLMProvider
 from terminal_agent.tools.shell.bash import bash_tool
 from terminal_agent.tools.shell.powershell import powershell_tool
 from terminal_agent.llm.base import get_llm, PROVIDER_TYPE
+
 
 async def build_agent(shell_type) -> Any:
     """Construct a shell execution agent for the specified shell type.
@@ -34,7 +41,7 @@ async def build_agent(shell_type) -> Any:
     Bash or PowerShell, depending on ``shell_type``. The agent includes shell
     execution tools, middleware for policy enforcement and human-in-the-loop
     approvals, and a checkpointer for maintaining agent state between runs.
-    
+
     Args:
         shell_type (str): The shell environment to use, one of ``"bash"`` or
             ``"powershell"``. Determines which tool is loaded and how commands
@@ -87,14 +94,16 @@ async def build_agent(shell_type) -> Any:
                     root_dir=cfg.shell_policy.root_dir,
                     enforce_root_jail=cfg.shell_policy.enforce_root_jail,
                     max_command_len=cfg.shell_policy.max_command_len,
-                    enforce_mode="auto_block"
+                    enforce_mode="auto_block",
                 )
             ),
             HumanInTheLoopMiddleware(
                 interrupt_on={
                     # Require human approval before executing shell commands
                     "bash_tool": {"allowed_decisions": ["approve", "edit", "reject"]},
-                    "powershell_tool": {"allowed_decisions": ["approve", "edit", "reject"]},
+                    "powershell_tool": {
+                        "allowed_decisions": ["approve", "edit", "reject"]
+                    },
                 }
             ),
         ],

@@ -81,7 +81,9 @@ class PowerShellCommandsInput(BaseModel):
     description="Execute PowerShell commands sequentially with a persistent working directory. Uses a persistent session if available; otherwise falls back to subprocess.",
     args_schema=PowerShellCommandsInput,
 )
-def powershell_tool(commands: List[str], cwd: Optional[str] = None, **kwargs: Any) -> Dict[str, Any]:
+def powershell_tool(
+    commands: List[str], cwd: Optional[str] = None, **kwargs: Any
+) -> Dict[str, Any]:
     """Execute PowerShell commands safely in sequence.
 
     Validates each command against the terminal policy, executes them in a persistent
@@ -113,7 +115,7 @@ def powershell_tool(commands: List[str], cwd: Optional[str] = None, **kwargs: An
     """
     # Create input object from parameters
     input = PowerShellCommandsInput(commands=commands, cwd=cwd)
-    
+
     # Resolve starting CWD and enforce sandbox root.
     cwd_path = Path(input.cwd) if input.cwd else POLICY.root_dir
     cwd_path = cwd_path.resolve()
@@ -142,7 +144,9 @@ def powershell_tool(commands: List[str], cwd: Optional[str] = None, **kwargs: An
         Returns:
             Dict[str, Any]: Single-command result dict.
         """
-        wrapped = f"Set-Location {cwd}; {cmd}; Write-Output {_MARKER}; (Get-Location).Path"
+        wrapped = (
+            f"Set-Location {cwd}; {cmd}; Write-Output {_MARKER}; (Get-Location).Path"
+        )
         log.info("powershell_tool: running | cwd=%s | cmd=%s", cwd, cmd)
 
         if session:
@@ -170,7 +174,9 @@ def powershell_tool(commands: List[str], cwd: Optional[str] = None, **kwargs: An
                 rc = proc.returncode
             except subprocess.TimeoutExpired as e:
                 stdout = (e.stdout.decode() if e.stdout else "").strip()
-                stderr = ((e.stderr.decode() if e.stderr else "") + "\n[TIMEOUT]").strip()
+                stderr = (
+                    (e.stderr.decode() if e.stderr else "") + "\n[TIMEOUT]"
+                ).strip()
                 rc = 124
 
         # Extract output and updated CWD using the marker

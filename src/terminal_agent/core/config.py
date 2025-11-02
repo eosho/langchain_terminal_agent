@@ -23,6 +23,7 @@ load_dotenv()
 
 class LLMProvider(str, Enum):
     """Enumerates supported Large Language Model providers."""
+
     OPENAI = "openai"
     AZURE_OPENAI = "azure_openai"
 
@@ -45,6 +46,7 @@ class LLMConfig:
         azure_api_version: Azure OpenAI API version string.
         azure_deployment: Azure OpenAI deployment (falls back to ``model`` if unset).
     """
+
     provider: LLMProvider = LLMProvider(os.getenv("LLM_PROVIDER", "openai"))
 
     model: str = os.getenv("MODEL_NAME", "gpt-4o-mini")
@@ -79,36 +81,77 @@ class ShellPolicySettings:
         enforce_root_jail: Whether to enforce that CWD stays under ``root_dir``.
         max_command_len: Maximum permitted command length (characters).
     """
+
     allowed_bash_commands: List[str] = field(
         default_factory=lambda: [
-            "cd", "cp", "ls", "cat", "find", "touch", "echo",
-            "grep", "pwd", "mkdir", "wget", "sort", "head", "tail", "du",
+            "cd",
+            "cp",
+            "ls",
+            "cat",
+            "find",
+            "touch",
+            "echo",
+            "grep",
+            "pwd",
+            "mkdir",
+            "wget",
+            "sort",
+            "head",
+            "tail",
+            "du",
         ]
     )
     dangerous_bash_commands: List[str] = field(
         default_factory=lambda: [
-            "rm", "mv", "rmdir", "sudo", "chmod", "chown",
-            "dd", "mkfs", "shutdown", "reboot", "halt",
+            "rm",
+            "mv",
+            "rmdir",
+            "sudo",
+            "chmod",
+            "chown",
+            "dd",
+            "mkfs",
+            "shutdown",
+            "reboot",
+            "halt",
         ]
     )
     allowed_powershell_commands: List[str] = field(
         default_factory=lambda: [
-            "Get-ChildItem", "Set-Location", "Get-Content",
-            "Select-String", "Copy-Item", "New-Item",
-            "Get-Process", "Get-Service", "Get-Date",
-            "Invoke-WebRequest", "Sort-Object", "Measure-Object",
+            "Get-ChildItem",
+            "Set-Location",
+            "Get-Content",
+            "Select-String",
+            "Copy-Item",
+            "New-Item",
+            "Get-Process",
+            "Get-Service",
+            "Get-Date",
+            "Invoke-WebRequest",
+            "Sort-Object",
+            "Measure-Object",
         ]
     )
     dangerous_powershell_commands: List[str] = field(
         default_factory=lambda: [
-            "Remove-Item", "Stop-Process", "Restart-Computer",
-            "Stop-Computer", "Set-ExecutionPolicy", "Invoke-Expression",
-            "Invoke-Command", "New-Service", "Remove-Service",
-            "Format-Volume", "New-LocalUser", "Remove-LocalUser",
+            "Remove-Item",
+            "Stop-Process",
+            "Restart-Computer",
+            "Stop-Computer",
+            "Set-ExecutionPolicy",
+            "Invoke-Expression",
+            "Invoke-Command",
+            "New-Service",
+            "Remove-Service",
+            "Format-Volume",
+            "New-LocalUser",
+            "Remove-LocalUser",
         ]
     )
 
-    root_dir: Path = field(default_factory=lambda: Path(os.getenv("SHELL_ROOT_DIR", Path.cwd())))
+    root_dir: Path = field(
+        default_factory=lambda: Path(os.getenv("SHELL_ROOT_DIR", Path.cwd()))
+    )
     enforce_root_jail: bool = True
     max_command_len: int = 8000
 
@@ -177,6 +220,7 @@ class AppConfig:
         llm: LLM configuration (provider, model, and tuning).
         shell_policy: ShellPolicySettings controlling command safety and assistant guidance.
     """
+
     llm: LLMConfig = field(default_factory=LLMConfig)
     shell_policy: ShellPolicySettings = field(default_factory=ShellPolicySettings)
 

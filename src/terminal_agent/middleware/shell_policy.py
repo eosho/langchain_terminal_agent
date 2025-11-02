@@ -34,6 +34,7 @@ class ShellPolicyConfig:
         max_command_len: Maximum characters allowed in a command string.
         enforce_mode: Enforcement mode: "auto_block", "warn_only", or "defer_to_hitl".
     """
+
     allowed_bash: List[str]
     dangerous_bash: List[str]
     allowed_pwsh: List[str]
@@ -87,7 +88,9 @@ class ShellPolicyMiddleware(AgentMiddleware):
         except Exception:
             return str(cwd.resolve()).startswith(str(self.cfg.root_dir.resolve()))
 
-    def _validate_command(self, cmd: str, powershell: bool, cwd: Path) -> tuple[bool, str]:
+    def _validate_command(
+        self, cmd: str, powershell: bool, cwd: Path
+    ) -> tuple[bool, str]:
         """Validate a single shell command string against the policy.
 
         Args:
@@ -121,7 +124,9 @@ class ShellPolicyMiddleware(AgentMiddleware):
 
         return True, ""
 
-    def before_model(self, state: AgentState, runtime: Runtime) -> Dict[str, Any] | None:
+    def before_model(
+        self, state: AgentState, runtime: Runtime
+    ) -> Dict[str, Any] | None:
         """Hook executed just before each model invocation.
 
         Use this to inspect state and possibly redirect execution prior to tool actions.
@@ -166,22 +171,31 @@ class ShellPolicyMiddleware(AgentMiddleware):
             total_tokens = usage.get("total_tokens")
             logger.info(
                 "[Policy] Model token usage: input=%s output=%s total=%s",
-                input_tokens, output_tokens, total_tokens
+                input_tokens,
+                output_tokens,
+                total_tokens,
             )
 
         # Determine if the model called a tool
         tool_name = state.get("tool_name")
         tool_input = state.get("tool_input", {})
         if tool_name in {"bash_tool", "powershell_tool"}:
-            powershell = (tool_name == "powershell_tool")
+            powershell = tool_name == "powershell_tool"
             commands = tool_input.get("commands", [])
             cwd_raw = tool_input.get("cwd", ".")
             cwd = Path(cwd_raw).resolve()
 
             for cmd in commands:
-                allowed, reason = self._validate_command(cmd, powershell=powershell, cwd=cwd)
+                allowed, reason = self._validate_command(
+                    cmd, powershell=powershell, cwd=cwd
+                )
                 if not allowed:
-                    detail = {"tool": tool_name, "cmd": cmd, "reason": reason, "cwd": str(cwd)}
+                    detail = {
+                        "tool": tool_name,
+                        "cmd": cmd,
+                        "reason": reason,
+                        "cwd": str(cwd),
+                    }
                     logger.warning("[Policy] Violation: %s", detail)
                     mode = self.cfg.enforce_mode
                     if mode == "auto_block":

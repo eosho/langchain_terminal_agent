@@ -22,13 +22,13 @@ class BaseAgentState(BaseModel):
         session_id: Unique identifier for the current agent session.
         metadata: Arbitrary session metadata for contextual storage.
     """
+
     session_id: Optional[str] = Field(
-        default=None,
-        description="Unique identifier for the session."
+        default=None, description="Unique identifier for the session."
     )
     metadata: Optional[Dict[str, Any]] = Field(
         default=None,
-        description="Arbitrary metadata for storing additional session context."
+        description="Arbitrary metadata for storing additional session context.",
     )
 
 
@@ -44,11 +44,10 @@ class ShellState(BaseAgentState):
         cwd: Current working directory path for the session.
         shell_type: Shell environment in use, either "bash" or "powershell".
     """
+
     cwd: str = Field(
-        default=".",
-        description="Current working directory for shell operations."
+        default=".", description="Current working directory for shell operations."
     )
     shell_type: Literal["bash", "powershell"] = Field(
-        default="bash",
-        description="Shell environment to use (bash or powershell)."
+        default="bash", description="Shell environment to use (bash or powershell)."
     )

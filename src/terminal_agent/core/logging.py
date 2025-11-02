@@ -56,4 +56,3 @@ def setup_logging(default_level: int = logging.INFO) -> None:
     }
 
     logging.config.dictConfig(logging_config)
-    
