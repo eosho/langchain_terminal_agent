@@ -42,7 +42,9 @@ async def run() -> None:
     setup_logging(logging.INFO)
 
     # Determine the default shell type from system platform.
-    default_shell = "powershell" if platform.system().lower().startswith("win") else "bash"
+    default_shell = (
+        "powershell" if platform.system().lower().startswith("win") else "bash"
+    )
     state = ShellState(cwd=".", shell_type=default_shell)
 
     # Build the agent
@@ -77,7 +79,9 @@ async def run() -> None:
 
         # Invoke the agent with user input
         try:
-            result = agent.invoke({"messages": [{"role": "user", "content": prompt}]}, config=config)
+            result = agent.invoke(
+                {"messages": [{"role": "user", "content": prompt}]}, config=config
+            )
         except Exception:
             logging.exception("Agent invocation failed.")
             continue
@@ -91,7 +95,11 @@ async def run() -> None:
                 logging.exception("Failed to retrieve agent state after invocation.")
 
         # Handle Human-In-The-Loop approvals
-        while state_obj is not None and getattr(state_obj, "next", None) and getattr(state_obj, "tasks", None):
+        while (
+            state_obj is not None
+            and getattr(state_obj, "next", None)
+            and getattr(state_obj, "tasks", None)
+        ):
             task = state_obj.tasks[0] if getattr(state_obj, "tasks", None) else None
             if not task or not getattr(task, "interrupts", None):
                 break
@@ -111,7 +119,11 @@ async def run() -> None:
             except TypeError:
                 print(str(action_request))
 
-            decision = input("Enter decision ([a]ccept/[e]dit/[i]gnore/[r]esponse): ").strip().lower()
+            decision = (
+                input("Enter decision ([a]ccept/[e]dit/[i]gnore/[r]esponse): ")
+                .strip()
+                .lower()
+            )
 
             # Build resume payload based on user decision
             if decision.startswith("a"):
@@ -127,21 +139,31 @@ async def run() -> None:
                 action_value = None
                 if isinstance(action_request, dict):
                     action_value = action_request.get("action")
-                elif isinstance(action_request, list) and action_request and isinstance(action_request[0], dict):
+                elif (
+                    isinstance(action_request, list)
+                    and action_request
+                    and isinstance(action_request[0], dict)
+                ):
                     action_value = action_request[0].get("action")
-                resume_payload = {"decisions": [{
-                    "type": "edit",
-                    "args": {
-                        "action": action_value,
-                        "args": parsed_args,
-                    },
-                }]}
+                resume_payload = {
+                    "decisions": [
+                        {
+                            "type": "edit",
+                            "args": {
+                                "action": action_value,
+                                "args": parsed_args,
+                            },
+                        }
+                    ]
+                }
             elif decision.startswith("i"):
                 resume_payload = {"decisions": [{"type": "reject"}]}
             elif decision.startswith("r"):
                 manual_resp = input("Enter manual response: ").strip()
                 # For manual response, we'll reject the original action and provide a manual response
-                resume_payload = {"decisions": [{"type": "reject", "response": manual_resp}]}
+                resume_payload = {
+                    "decisions": [{"type": "reject", "response": manual_resp}]
+                }
             else:
                 print("Unrecognized decision; defaulting to approve.")
                 resume_payload = {"decisions": [{"type": "approve"}]}
@@ -165,10 +187,18 @@ async def run() -> None:
 
         # Print the final conversation trace
         print("\n=== Conversation Trace ===")
-        messages = result.get("messages", []) if isinstance(result, dict) else getattr(result, "messages", [])
+        messages = (
+            result.get("messages", [])
+            if isinstance(result, dict)
+            else getattr(result, "messages", [])
+        )
         for i, msg in enumerate(messages or [], start=1):
-            role = getattr(msg, "role", None) or (msg.get("role") if isinstance(msg, dict) else "assistant")
-            content = getattr(msg, "content", None) or (msg.get("content") if isinstance(msg, dict) else "")
+            role = getattr(msg, "role", None) or (
+                msg.get("role") if isinstance(msg, dict) else "assistant"
+            )
+            content = getattr(msg, "content", None) or (
+                msg.get("content") if isinstance(msg, dict) else ""
+            )
             print(f"\nMessage {i} [{role}]:\n{content}")
 
     print("\n👋 Session ended. Goodbye!")
