@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import logging
 from typing import Any
-from langchain_openai import ChatOpenAI, AzureChatOpenAI
+
+from langchain_openai import AzureChatOpenAI, ChatOpenAI
+
+from terminal_agent.core.config import LLMConfig
 
 from .base import BaseProvider, LLMFactory
-from terminal_agent.core.config import LLMConfig
 
 
 class OpenAIProvider(BaseProvider):

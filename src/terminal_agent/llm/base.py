@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Type, Literal
-
+from typing import Any, Dict, Literal, Type
 
 PROVIDER_TYPE = Literal["openai", "azure_openai"]
 

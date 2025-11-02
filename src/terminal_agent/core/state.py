@@ -7,7 +7,8 @@ invocations to maintain continuity of information—such as the working
 directory and the active shell type.
 """
 
-from typing import Literal, Optional, Dict, Any
+from typing import Any, Dict, Literal, Optional
+
 from pydantic import BaseModel, Field
 
 

@@ -15,7 +15,8 @@ import os
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Dict, Optional, List
+from typing import List, Optional
+
 from dotenv import load_dotenv
 
 load_dotenv()

@@ -12,26 +12,25 @@ Model/provider settings are injected from environment variables
 via :class:`terminal_agent.core.config.AppConfig`.
 """
 
-from typing import Any, cast
+from typing import Any
 
 from langchain.agents import create_agent
 from langchain.agents.middleware import HumanInTheLoopMiddleware
-from langchain_openai import ChatOpenAI, AzureChatOpenAI
-from langgraph.checkpoint.memory import InMemorySaver
 from langchain.tools import BaseTool
+from langgraph.checkpoint.memory import InMemorySaver
 
-from terminal_agent.middleware.shell_session import (
-    ShellSessionMiddleware,
-    ShellSessionConfig,
-)
+from terminal_agent.core.config import AppConfig
+from terminal_agent.llm.base import get_llm
 from terminal_agent.middleware.shell_policy import (
-    ShellPolicyMiddleware,
     ShellPolicyConfig,
+    ShellPolicyMiddleware,
 )
-from terminal_agent.core.config import AppConfig, LLMConfig, LLMProvider
+from terminal_agent.middleware.shell_session import (
+    ShellSessionConfig,
+    ShellSessionMiddleware,
+)
 from terminal_agent.tools.shell.bash import bash_tool
 from terminal_agent.tools.shell.powershell import powershell_tool
-from terminal_agent.llm.base import get_llm, PROVIDER_TYPE
 
 
 async def build_agent(shell_type) -> Any:
