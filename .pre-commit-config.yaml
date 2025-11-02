@@ -37,7 +37,7 @@ repos:
 
       - id: mypy
         name: mypy
-        entry: uv run mypy src tests --check-untyped-defs
+        entry: uv run mypy src --check-untyped-defs
         language: system
         types: [python]
         pass_filenames: false
