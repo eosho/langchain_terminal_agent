@@ -21,84 +21,50 @@ Designed for use with [LangChain](https://www.langchain.com/) and [LangGraph](ht
 ## 🧱 Architecture Overview
 
 ```mermaid
-flowchart TB
-    %% User Layer
-    User["👤 User Input"]
+sequenceDiagram
+    participant User as 👤 User
+    participant Agent as 🧠 LangChain Agent
+    participant LLM as 🤖 Chat Model
+    participant Config as ⚙️ AppConfig
+    participant SessionMW as 🔄 Session Middleware
+    participant PolicyMW as 🔒 Policy Middleware
+    participant HITLMW as 👀 HITL Middleware
+    participant Tool as ⚡ Shell Tool
+    participant System as 💻 System
+    participant State as 💾 State Checkpointer
+
+    User->>Agent: Submit Request
+    Agent->>Config: Load Settings & Policy
+    Config-->>Agent: Return Configuration
     
-    %% Agent Core
-    Agent["🧠 LangChain Agent<br/>(LangGraph Runtime)"]
-    LLM["🤖 Chat Model<br/>(OpenAI / Azure OpenAI)"]
+    Agent->>LLM: Generate Response
+    LLM-->>Agent: Tool Selection & Commands
     
-    %% Configuration
-    Config["⚙️ AppConfig<br/>(from .env)"]
-    Policy["🛡️ Policy Settings<br/>- Allowed Commands<br/>- Dangerous Commands<br/>- Root Directory<br/>- Enforce Mode"]
+    Agent->>State: Save Current State
+    Agent->>SessionMW: Execute Tool Call
     
-    %% Middleware Stack
-    SessionMW["🔄 Session Middleware<br/>- Persistent Shell Process<br/>- State Management<br/>- CWD Tracking"]
-    PolicyMW["🔒 Policy Middleware<br/>- Command Validation<br/>- Sandbox Enforcement<br/>- Token Telemetry"]
-    HITLMW["👀 HITL Middleware<br/>- Human Approval<br/>- Edit/Reject/Accept"]
-    
-    %% Tools
-    BashTool["⚡ Bash Tool<br/>- Execute Commands<br/>- Persistent CWD<br/>- Root Jail"]
-    PowerShellTool["⚡ PowerShell Tool<br/>- Execute Commands<br/>- Persistent CWD<br/>- Root Jail"]
-    
-    %% State Management
-    State["💾 State Checkpointer<br/>(SQLite / In-Memory)"]
-    
-    %% System Output
-    System["💻 System Execution<br/>(Bash / PowerShell)"]
-    Output["📤 Results & Output"]
-    
-    %% Flow connections
-    User -->|"Request"| Agent
-    Config -->|"Load Settings"| Agent
-    Config -->|"Provide Policy"| Policy
-    Policy -->|"Configure"| PolicyMW
-    Policy -->|"Configure"| SessionMW
-    
-    Agent -->|"Generate Response"| LLM
-    LLM -->|"Tool Selection"| Agent
-    
-    Agent -->|"Tool Call"| SessionMW
-    SessionMW -->|"Validate Command"| PolicyMW
-    PolicyMW -->|"Validate Command"| HITLMW
-    PolicyMW -.->|"Policy Violation"| User
-    
-    HITLMW -->|"Request Approval"| User
-    User -.->|"Approve/Edit/Reject"| HITLMW
-    
-    HITLMW -->|"Approved"| BashTool
-    HITLMW -->|"Approved"| PowerShellTool
-    
-    BashTool -->|"Execute"| System
-    PowerShellTool -->|"Execute"| System
-    
-    System -->|"stdout/stderr"| BashTool
-    System -->|"stdout/stderr"| PowerShellTool
-    
-    BashTool -->|"Results"| Agent
-    PowerShellTool -->|"Results"| Agent
-    
-    Agent <-->|"Save/Load State"| State
-    Agent -->|"Final Response"| Output
-    Output -->|"Display"| User
-    
-    %% Styling
-    classDef userClass fill:#e1f5ff,stroke:#01579b,stroke-width:2px
-    classDef agentClass fill:#fff3e0,stroke:#e65100,stroke-width:2px
-    classDef configClass fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
-    classDef middlewareClass fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
-    classDef toolClass fill:#fff9c4,stroke:#f57f17,stroke-width:2px
-    classDef stateClass fill:#fce4ec,stroke:#880e4f,stroke-width:2px
-    classDef systemClass fill:#e0f2f1,stroke:#004d40,stroke-width:2px
-    
-    class User,Output userClass
-    class Agent,LLM agentClass
-    class Config,Policy configClass
-    class SessionMW,PolicyMW,HITLMW middlewareClass
-    class BashTool,PowerShellTool toolClass
-    class State stateClass
-    class System systemClass
+    SessionMW->>PolicyMW: Validate Command
+    alt Policy Violation
+        PolicyMW-->>User: Policy Violation Alert
+    else Command Valid
+        PolicyMW->>HITLMW: Request Human Approval
+        HITLMW->>User: Show Command for Approval
+        User-->>HITLMW: Approve/Edit/Reject
+        
+        alt Command Approved
+            HITLMW->>Tool: Execute Approved Command
+            Tool->>System: Run Shell Command
+            System-->>Tool: Return stdout/stderr
+            Tool-->>SessionMW: Command Results
+            SessionMW-->>Agent: Tool Response
+            
+            Agent->>State: Update State with Results
+            Agent-->>User: Final Response with Output
+        else Command Rejected
+            HITLMW-->>Agent: Command Rejected
+            Agent-->>User: Execution Cancelled
+        end
+    end
 ```
 
 ---
@@ -290,50 +256,6 @@ python main.py
 * **Human-In-The-Loop (HITL) middleware** requires user approval before any real command runs.
 * **Persistent shell sessions** are managed safely with automatic cleanup.
 * All command outputs are captured and returned safely without system exposure.
-
----
-
-## 🧩 Project Structure
-
-```txt
-langchain_terminal_agent/
-├── src/
-│   └── terminal_agent/
-│       ├── __init__.py
-│       ├── builder.py           # Agent builder factory
-│       ├── core/
-│       │   ├── __init__.py
-│       │   ├── config.py        # LLM + policy configuration
-│       │   ├── logging.py       # Logging configuration
-│       │   └── state.py         # Agent state configuration
-│       ├── llm/
-│       │   ├── __init__.py
-│       │   ├── base.py          # LLM factory and provider interface
-│       │   └── provider.py      # OpenAI and Azure OpenAI providers
-│       ├── middleware/
-│       │   ├── shell_policy.py  # Policy middleware for command validation
-│       │   └── shell_session.py # Persistent shell session middleware
-│       └── tools/
-│           ├── __init__.py
-│           └── shell/
-│               ├── __init__.py
-│               ├── bash.py      # Bash execution tool
-│               └── powershell.py# PowerShell execution tool
-├── tmp/
-│   └── workspace/               # Default sandbox directory
-│       ├── data/
-│       ├── config/
-│       ├── docs/
-│       └── scripts/
-├── main.py                      # Entry point for local testing
-├── requirements.txt
-├── Makefile
-├── .env                         # Environment configuration
-├── .env.sample                  # Environment template
-├── .gitignore
-├── LICENSE
-└── README.md
-```
 
 ---
 
