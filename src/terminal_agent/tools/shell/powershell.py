@@ -84,35 +84,23 @@ class PowerShellCommandsInput(BaseModel):
 def powershell_tool(
     commands: List[str], cwd: Optional[str] = None, **kwargs: Any
 ) -> Dict[str, Any]:
-    """Execute PowerShell commands safely in sequence.
+    """Run PowerShell commands safely in sequence.
 
-    Validates each command against the terminal policy, executes them in a persistent
-    session if available (provided via ShellSessionMiddleware), tracks and maintains
-    the working directory across commands, and enforces a root jail when enabled.
+    Validates each command against policy, executes them in a persistent
+    session when available, and maintains the current working directory.
 
     Args:
-        commands: List of PowerShell commands to execute sequentially.
-        cwd: Optional starting directory; defaults to policy root.
-        **kwargs: Tool runtime context. When invoked by an agent with middleware,
-            this may include:
-              - `state`: Agent state dict. If a shell session exists, it should be
-                available at `state["resources"]["shell_session"]["powershell"]`.
+        commands: List of PowerShell commands.
+        cwd: Optional starting directory.
+        **kwargs: Optional runtime context (e.g., agent state).
 
     Returns:
-        Dict[str, Any]: A result payload with:
-            - `success` (bool): True if all commands succeeded.
-            - `results` (List[Dict[str, Any]]): Per-command outputs.
-            - `cwd` (str): Final working directory after all commands.
-
-    Result item schema:
-        {
-          "cmd": str,
-          "returncode": int,
-          "stdout": str,
-          "stderr": str,
-          "cwd": str
-        }
+        Dict with:
+        - success (bool)
+        - results (list of per-command outputs)
+        - cwd (final working directory)
     """
+
     # Create input object from parameters
     input = PowerShellCommandsInput(commands=commands, cwd=cwd)
 

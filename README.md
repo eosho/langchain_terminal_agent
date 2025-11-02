@@ -36,13 +36,13 @@ sequenceDiagram
     User->>Agent: Submit Request
     Agent->>Config: Load Settings & Policy
     Config-->>Agent: Return Configuration
-    
+
     Agent->>LLM: Generate Response
     LLM-->>Agent: Tool Selection & Commands
-    
+
     Agent->>State: Save Current State
     Agent->>SessionMW: Execute Tool Call
-    
+
     SessionMW->>PolicyMW: Validate Command
     alt Policy Violation
         PolicyMW-->>User: Policy Violation Alert
@@ -50,14 +50,14 @@ sequenceDiagram
         PolicyMW->>HITLMW: Request Human Approval
         HITLMW->>User: Show Command for Approval
         User-->>HITLMW: Approve/Edit/Reject
-        
+
         alt Command Approved
             HITLMW->>Tool: Execute Approved Command
             Tool->>System: Run Shell Command
             System-->>Tool: Return stdout/stderr
             Tool-->>SessionMW: Command Results
             SessionMW-->>Agent: Tool Response
-            
+
             Agent->>State: Update State with Results
             Agent-->>User: Final Response with Output
         else Command Rejected
@@ -188,7 +188,7 @@ import asyncio
 async def main():
     agent = await build_agent(shell_type="bash")  # or "powershell"
     config = {"configurable": {"thread_id": "1"}}
-    
+
     # Interactive mode with human-in-the-loop approval
     result = agent.invoke(
         {"messages": [{"role": "user", "content": "Show me the current directory and list its files."}]},
@@ -209,7 +209,7 @@ asyncio.run(main())
 # Using black for code formatting
 python -m black .
 
-# Using isort for import sorting  
+# Using isort for import sorting
 python -m isort .
 ```
 

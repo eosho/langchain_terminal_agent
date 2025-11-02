@@ -12,6 +12,7 @@ import asyncio
 import json
 import logging
 import platform
+from typing import Any, Dict, Literal
 
 from langgraph.types import Command
 
@@ -42,7 +43,7 @@ async def run() -> None:
     setup_logging(logging.INFO)
 
     # Determine the default shell type from system platform.
-    default_shell = (
+    default_shell: Literal["bash", "powershell"] = (
         "powershell" if platform.system().lower().startswith("win") else "bash"
     )
     state = ShellState(cwd=".", shell_type=default_shell)
@@ -145,17 +146,18 @@ async def run() -> None:
                     and isinstance(action_request[0], dict)
                 ):
                     action_value = action_request[0].get("action")
-                resume_payload = {
-                    "decisions": [
-                        {
-                            "type": "edit",
-                            "args": {
-                                "action": action_value,
-                                "args": parsed_args,
-                            },
-                        }
-                    ]
-                }
+
+                # Build edit decision with proper type handling
+                edit_decision: Dict[str, Any] = {"type": "edit"}
+                if action_value is not None or parsed_args:
+                    edit_args: Dict[str, Any] = {}
+                    if action_value is not None:
+                        edit_args["action"] = str(action_value)
+                    if parsed_args:
+                        edit_args["args"] = parsed_args
+                    edit_decision["args"] = edit_args
+
+                resume_payload = {"decisions": [edit_decision]}
             elif decision.startswith("i"):
                 resume_payload = {"decisions": [{"type": "reject"}]}
             elif decision.startswith("r"):

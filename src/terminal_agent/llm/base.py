@@ -16,7 +16,6 @@ class BaseProvider(ABC):
     @abstractmethod
     def create_client(self, **kwargs: Any) -> Any:
         """Return a fully initialized LLM client."""
-        pass
 
 
 class LLMFactory:

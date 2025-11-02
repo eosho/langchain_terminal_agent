@@ -11,7 +11,7 @@ hook. Intended to run **before** human-in-the-loop (HITL) middleware.
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Literal
+from typing import Any, Dict, List, Literal, cast
 
 from langchain.agents.middleware import AgentMiddleware, AgentState
 from langgraph.runtime import Runtime
@@ -162,8 +162,11 @@ class ShellPolicyMiddleware(AgentMiddleware):
         Raises:
             ShellPolicyViolation: If enforcement mode is `auto_block` and a violation is found.
         """
+        # Cast state to dict for type safety
+        state_dict = cast(Dict[str, Any], state)
+
         # Log token usage if available
-        usage = state.get("usage")
+        usage = state_dict.get("usage")
         if isinstance(usage, dict):
             input_tokens = usage.get("prompt_tokens") or usage.get("input_tokens")
             output_tokens = usage.get("completion_tokens") or usage.get("output_tokens")
@@ -176,8 +179,8 @@ class ShellPolicyMiddleware(AgentMiddleware):
             )
 
         # Determine if the model called a tool
-        tool_name = state.get("tool_name")
-        tool_input = state.get("tool_input", {})
+        tool_name = state_dict.get("tool_name")
+        tool_input = state_dict.get("tool_input", {})
         if tool_name in {"bash_tool", "powershell_tool"}:
             powershell = tool_name == "powershell_tool"
             commands = tool_input.get("commands", [])
