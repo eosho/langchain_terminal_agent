@@ -1,4 +1,4 @@
-# 🧠 Terminal Agent
+# >_ Terminal Agent
 
 A **safe, human-in-the-loop terminal assistant** capable of executing **Bash** and **PowerShell** commands.
 Designed for use with [LangChain](https://www.langchain.com/) and [LangGraph](https://github.com/langchain-ai/langgraph), it brings LLM reasoning, guardrails, and human oversight to real shell execution.
