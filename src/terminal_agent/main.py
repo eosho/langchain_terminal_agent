@@ -2,23 +2,77 @@
 Command-line entry point for the Shell agent.
 
 This module demonstrates a fully interactive human-in-the-loop (HITL)
-workflow using the shell agent built in `terminal_agent.build_agent`.
+workflow using the shell agent built in `terminal_agent.builder.build_agent`.
 
 Shell-related actions will pause execution and prompt the user to approve,
-edit, ignore, or manually respond before continuing.
+reject before continuing.
 """
 
 import asyncio
-import json
 import logging
 import platform
+import uuid
 from typing import Any, Dict, Literal
 
 from langgraph.types import Command
+from rich.panel import Panel
 
 from terminal_agent.builder import build_agent
 from terminal_agent.core.logging import setup_logging
 from terminal_agent.core.state import ShellState
+from terminal_agent.utils.console_utils import console, show_approval_panel
+
+
+def _extract_tool_name(action_request: Any) -> str:
+    """Best-effort extraction of the tool/action name from an interrupt payload.
+
+    Args:
+        action_request: The interrupt's action request payload.
+    """
+    if isinstance(action_request, dict):
+        return (
+            action_request.get("tool")
+            or action_request.get("action")
+            or action_request.get("name")
+            or ""
+        )
+    if (
+        isinstance(action_request, list)
+        and action_request
+        and isinstance(action_request[0], dict)
+    ):
+        return (
+            action_request[0].get("tool")
+            or action_request[0].get("action")
+            or action_request[0].get("name")
+            or ""
+        )
+    return ""
+
+
+def build_resume_payload(
+    decision: str,
+    action_request: Dict[str, Any] | Any,
+) -> Dict[str, Any]:
+    """Construct the Human-In-The-Loop resume payload.
+
+    Args:
+        decision: One of "approve", "reject".
+        action_request: The interrupt's action request payload.
+
+    Returns:
+        Dict[str, Any]: {"decisions": [ … ]} payload expected by HITL middleware.
+    """
+    tool_name = _extract_tool_name(action_request)
+
+    if decision == "approve":
+        item = {"type": "approve", "tool": tool_name}
+    elif decision == "reject":
+        item = {"type": "reject", "tool": tool_name}
+    else:
+        item = {"type": "reject", "tool": tool_name}
+
+    return {"decisions": [item]}
 
 
 async def run() -> None:
@@ -27,8 +81,7 @@ async def run() -> None:
     This coroutine demonstrates real-time human-in-the-loop (HITL)
     decision-making. When the agent encounters a shell tool action
     (e.g., Bash or PowerShell command), it pauses and waits for user
-    approval before execution. The user can choose to accept, edit,
-    ignore, or manually respond.
+    approval before execution. The user can choose to accept or ignore.
 
     Example:
         ```bash
@@ -39,7 +92,6 @@ async def run() -> None:
         Exception: Propagates exceptions from agent invocation or resume
         if critical errors occur.
     """
-    # Initialize structured logging.
     setup_logging(logging.INFO)
 
     # Determine the default shell type from system platform.
@@ -51,15 +103,24 @@ async def run() -> None:
     # Build the agent
     agent = await build_agent(shell_type=default_shell)
 
-    # Fixed thread ID for this demo session.
-    thread_id = "1"
+    # Thread ID for the session.
+    thread_id = uuid.uuid4().hex
     config = {"configurable": {"thread_id": thread_id}}
 
-    print(f"🧠 Terminal Agent (HITL Mode)\nUsing {default_shell} shell by default.")
-    print("Type 'exit' to quit, or 'use bash' / 'use powershell' to switch.\n")
+    console.print(
+        Panel.fit(
+            f"[bold green]>_ Terminal Agent[/bold green]\nUsing [bold]{default_shell}[/bold] by default.\n\n"
+            "Type 'exit' to quit, or 'use bash' / 'use powershell' to switch.",
+            border_style="green",
+        )
+    )
 
     while True:
-        user_input = input("> ").strip()
+        try:
+            user_input = input("> ").strip()
+        except (EOFError, KeyboardInterrupt):
+            break
+
         if not user_input:
             continue
         if user_input.lower() in {"exit", "quit"}:
@@ -68,21 +129,21 @@ async def run() -> None:
         # Allow explicit shell switching mid-session
         if user_input.lower() in {"use bash", "bash"}:
             state.shell_type = "bash"
-            print("⚙️  Switched to Bash mode.")
+            console.print("[yellow]⚙️  Switched to Bash mode.[/yellow]")
             continue
         if user_input.lower() in {"use powershell", "pwsh", "powershell"}:
             state.shell_type = "powershell"
-            print("⚙️  Switched to PowerShell mode.")
+            console.print("[yellow]⚙️  Switched to PowerShell mode.[/yellow]")
             continue
 
         # Compose contextual prompt with working directory and shell type
         prompt = f"Current working directory: {state.cwd}. Using {state.shell_type} shell.\n{user_input}"
 
-        # Invoke the agent with user input
         try:
-            result = agent.invoke(
-                {"messages": [{"role": "user", "content": prompt}]}, config=config
-            )
+            with console.status("[bold cyan]Thinking…[/bold cyan]", spinner="dots"):
+                result = agent.invoke(
+                    {"messages": [{"role": "user", "content": prompt}]}, config=config
+                )
         except Exception:
             logging.exception("Agent invocation failed.")
             continue
@@ -95,7 +156,6 @@ async def run() -> None:
             except Exception:
                 logging.exception("Failed to retrieve agent state after invocation.")
 
-        # Handle Human-In-The-Loop approvals
         while (
             state_obj is not None
             and getattr(state_obj, "next", None)
@@ -114,65 +174,27 @@ async def run() -> None:
             else:
                 action_request = value or {}
 
-            print("\n⚠️  Action requires approval:")
-            try:
-                print(json.dumps(action_request, indent=2))
-            except TypeError:
-                print(str(action_request))
+            # Display approval panel and prompt for decision
+            show_approval_panel(action_request)
 
-            decision = (
-                input("Enter decision ([a]ccept/[e]dit/[i]gnore/[r]esponse): ")
-                .strip()
-                .lower()
-            )
-
-            # Build resume payload based on user decision
+            decision = input("Decision ([a]pprove/[r]eject): ").strip().lower()
             if decision.startswith("a"):
-                resume_payload = {"decisions": [{"type": "approve"}]}
-            elif decision.startswith("e"):
-                new_args = input("Enter edited args as JSON: ").strip()
-                try:
-                    parsed_args = json.loads(new_args) if new_args else {}
-                except json.JSONDecodeError:
-                    print("Invalid JSON provided. Defaulting to approve.")
-                    parsed_args = {}
-                # Ensure action_request is a dict before accessing .get("action")
-                action_value = None
-                if isinstance(action_request, dict):
-                    action_value = action_request.get("action")
-                elif (
-                    isinstance(action_request, list)
-                    and action_request
-                    and isinstance(action_request[0], dict)
-                ):
-                    action_value = action_request[0].get("action")
-
-                # Build edit decision with proper type handling
-                edit_decision: Dict[str, Any] = {"type": "edit"}
-                if action_value is not None or parsed_args:
-                    edit_args: Dict[str, Any] = {}
-                    if action_value is not None:
-                        edit_args["action"] = str(action_value)
-                    if parsed_args:
-                        edit_args["args"] = parsed_args
-                    edit_decision["args"] = edit_args
-
-                resume_payload = {"decisions": [edit_decision]}
-            elif decision.startswith("i"):
-                resume_payload = {"decisions": [{"type": "reject"}]}
+                resume_payload = build_resume_payload("approve", action_request)
             elif decision.startswith("r"):
-                manual_resp = input("Enter manual response: ").strip()
-                # For manual response, we'll reject the original action and provide a manual response
-                resume_payload = {
-                    "decisions": [{"type": "reject", "response": manual_resp}]
-                }
+                resume_payload = build_resume_payload("reject", action_request)
             else:
-                print("Unrecognized decision; defaulting to approve.")
-                resume_payload = {"decisions": [{"type": "approve"}]}
+                console.print(
+                    "[yellow]Unrecognized decision; defaulting to reject.[/yellow]"
+                )
+                resume_payload = build_resume_payload("reject", action_request)
 
             # Resume execution with the selected decision
             try:
-                result = agent.invoke(Command(resume=resume_payload), config=config)
+                with console.status(
+                    "[bold cyan]Resuming with your decision…[/bold cyan]",
+                    spinner="dots",
+                ):
+                    result = agent.invoke(Command(resume=resume_payload), config=config)
             except Exception:
                 logging.exception("Error while resuming agent execution.")
                 break
@@ -188,26 +210,48 @@ async def run() -> None:
                 break
 
         # Print the final conversation trace
-        print("\n=== Conversation Trace ===")
+        console.print("\n[bold]=== Conversation Trace ===[/bold]")
         messages = (
             result.get("messages", [])
             if isinstance(result, dict)
             else getattr(result, "messages", [])
         )
+
+        # Filter out None or empty messages
+        messages = [
+            msg
+            for msg in messages or []
+            if msg
+            and (
+                (isinstance(msg, dict) and msg.get("content"))
+                or (hasattr(msg, "content") and getattr(msg, "content", None))
+            )
+        ]
+
         for i, msg in enumerate(messages or [], start=1):
             role = getattr(msg, "role", None) or (
                 msg.get("role") if isinstance(msg, dict) else "assistant"
             )
+            if role is None:
+                role = "assistant"
             content = getattr(msg, "content", None) or (
                 msg.get("content") if isinstance(msg, dict) else ""
             )
-            print(f"\nMessage {i} [{role}]:\n{content}")
+            role_color = "cyan" if role == "assistant" else "magenta"
+            console.print(
+                Panel.fit(
+                    f"[bold {role_color}]{str(role).upper()}[/bold {role_color}]\n{content}",
+                    border_style=role_color,
+                    title=f"Message {i}",
+                    title_align="left",
+                )
+            )
 
-    print("\n👋 Session ended. Goodbye!")
+    console.print("\n[cyan]👋 Session ended. Goodbye![/cyan]")
 
 
 def agent() -> None:
-    """Entry point for the Terminal Agent."""
+    """Entry point for the Terminal Agent (sync wrapper)."""
     asyncio.run(run())
 
 

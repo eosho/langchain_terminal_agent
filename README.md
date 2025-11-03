@@ -1,4 +1,4 @@
-# 🧠 Terminal Agent
+# >_ Terminal Agent
 
 A **safe, human-in-the-loop terminal assistant** capable of executing **Bash** and **PowerShell** commands.
 Designed for use with [LangChain](https://www.langchain.com/) and [LangGraph](https://github.com/langchain-ai/langgraph), it brings LLM reasoning, guardrails, and human oversight to real shell execution.
@@ -119,7 +119,7 @@ AZURE_OPENAI_DEPLOYMENT=gpt-4o
 OPENAI_API_KEY=sk-your-api-key
 
 # Terminal Agent Settings
-SHELL_ROOT_DIR=tmp/workspace  # Sandbox directory
+SHELL_ROOT_DIR=./  # Repository root directory
 LOG_LEVEL=INFO
 ```
 
@@ -138,7 +138,7 @@ LOG_LEVEL=INFO
 | `AZURE_OPENAI_API_KEY`      | Azure OpenAI API key                        | None                  |
 | `AZURE_OPENAI_API_VERSION`  | Azure OpenAI API version                    | None                  |
 | `AZURE_OPENAI_DEPLOYMENT`   | Azure OpenAI deployment name                | None                  |
-| `SHELL_ROOT_DIR`            | Root directory jail for shell execution     | `tmp/workspace`       |
+| `SHELL_ROOT_DIR`            | Root directory jail for shell execution     | `./`                  |
 | `LOG_LEVEL`                 | Logging verbosity (`DEBUG`, `INFO`, `WARN`) | `INFO`                |
 
 ---
