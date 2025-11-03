@@ -1,6 +1,6 @@
 [project]
 name = "terminal_agent"
-version = "0.1.0"
+version = "0.1.1"
 description = "A safe, human-in-the-loop terminal assistant capable of executing Bash and PowerShell commands."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -12,7 +12,14 @@ dependencies = [
   "tiktoken>=0.7.0",
   "typing-extensions>=4.9.0",
   "python-dotenv>=1.0.0",
+  "rich>=13.7.1",
 ]
+
+[project.urls]
+Homepage = "https://github.com/eosho/langchain_terminal_agent"
+Documentation = "https://github.com/eosho/langchain_terminal_agent#readme"
+Repository = "https://github.com/eosho/langchain_terminal_agent"
+Issues = "https://github.com/eosho/langchain_terminal_agent/issues"
 
 [tool.mypy]
 python_version = "3.11"
@@ -42,6 +49,9 @@ dev = [
 ]
 
 [tool.ruff]
+target-version = "py311"
+
+[tool.ruff.lint]
 extend-select = ["W291", "W293"]  # Trailing whitespace + blank lines
 
 [tool.hatch.build.targets.wheel]
@@ -49,9 +59,3 @@ packages = ["src/terminal_agent"]
 
 [project.scripts]
 terminal_agent = "terminal_agent.main:agent"
-
-[project.urls]
-Homepage = "https://github.com/eosho/langchain_terminal_agent"
-Documentation = "https://github.com/eosho/langchain_terminal_agent#readme"
-Repository = "https://github.com/eosho/langchain_terminal_agent"
-Issues = "https://github.com/eosho/langchain_terminal_agent/issues"
