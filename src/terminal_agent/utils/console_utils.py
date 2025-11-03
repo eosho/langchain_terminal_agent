@@ -8,11 +8,11 @@ helper.
 import time
 from typing import Union
 
+from rich.align import Align
 from rich.console import Console
 from rich.json import JSON
-from rich.panel import Panel
 from rich.live import Live
-from rich.align import Align
+from rich.panel import Panel
 
 # Global Console object
 console = Console()
