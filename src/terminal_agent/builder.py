@@ -99,9 +99,9 @@ async def build_agent(shell_type) -> Any:
             HumanInTheLoopMiddleware(
                 interrupt_on={
                     # Require human approval before executing shell commands
-                    "bash_tool": {"allowed_decisions": ["approve", "edit", "reject"]},
+                    "bash_tool": {"allowed_decisions": ["approve", "reject"]},
                     "powershell_tool": {
-                        "allowed_decisions": ["approve", "edit", "reject"]
+                        "allowed_decisions": ["approve", "reject"]
                     },
                 }
             ),

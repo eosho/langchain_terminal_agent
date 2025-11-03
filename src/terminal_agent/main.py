@@ -242,7 +242,7 @@ async def run() -> None:
                 Panel.fit(
                     f"[bold {role_color}]{str(role).upper()}[/bold {role_color}]\n{content}",
                     border_style=role_color,
-                    title=f"{role.capitalize()} Message {i}",
+                    title=f"Message {i}",
                     title_align="left",
                 )
             )
