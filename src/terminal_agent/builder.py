@@ -100,9 +100,7 @@ async def build_agent(shell_type) -> Any:
                 interrupt_on={
                     # Require human approval before executing shell commands
                     "bash_tool": {"allowed_decisions": ["approve", "reject"]},
-                    "powershell_tool": {
-                        "allowed_decisions": ["approve", "reject"]
-                    },
+                    "powershell_tool": {"allowed_decisions": ["approve", "reject"]},
                 }
             ),
         ],
