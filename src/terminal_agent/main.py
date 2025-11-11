@@ -137,16 +137,23 @@ async def run() -> None:
             continue
 
         # Compose contextual prompt with working directory and shell type
-        prompt = f"Current working directory: {state.cwd}. Using {state.shell_type} shell.\n{user_input}"
+        prompt = (
+            f"[USER]\n"
+            f"Current working directory: {state.cwd}\n"
+            f"Using {state.shell_type} shell.\n\n"
+            f"{user_input}"
+        )
 
         try:
             with console.status("[bold cyan]Thinking…[/bold cyan]", spinner="dots"):
                 result = agent.invoke(
-                    {"messages": [{"role": "user", "content": prompt}]}, config=config
+                    {"messages": [{"role": "user", "content": prompt}]},
+                    config=config
                 )
         except Exception:
             logging.exception("Agent invocation failed.")
             continue
+
 
         # Attempt to fetch agent state for pending tool interrupts
         state_obj = None

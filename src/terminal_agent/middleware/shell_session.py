@@ -6,7 +6,7 @@ exposes it via `state["resources"]["shell_session"]`. Shell tools can reuse
 this session for lower latency and true continuity (env/cwd/history).
 
 Order in builder:
-    ShellSessionMiddleware -> PolicyMiddleware -> HumanInTheLoopMiddleware
+    ShellSessionMiddleware -> ShellPolicyMiddleware -> HumanInTheLoopMiddleware
 """
 
 import io
@@ -117,6 +117,7 @@ class ShellSessionMiddleware(AgentMiddleware):
     """
 
     def __init__(self, cfg: ShellSessionConfig):
+        super().__init__()
         self.cfg = cfg
 
     def before_agent(
@@ -128,6 +129,9 @@ class ShellSessionMiddleware(AgentMiddleware):
             Optional state delta; here we attach the session into resources.
         """
         shell_exe = "/bin/bash" if self.cfg.shell_type == "bash" else "pwsh"
+        print(f"[ShellSession] Starting {self.cfg.shell_type} shell: {shell_exe}")
+        print(f"[ShellSession] Working directory: {self.cfg.startup_cwd}")
+
         session = _ShellSession(
             executable=shell_exe,
             cwd=self.cfg.startup_cwd,
@@ -136,7 +140,9 @@ class ShellSessionMiddleware(AgentMiddleware):
 
         # Optional startup commands (e.g., set -e, cd, env)
         if self.cfg.startup_cmds:
+            print(f"[ShellSession] Running {len(self.cfg.startup_cmds)} startup commands")
             for c in self.cfg.startup_cmds:
+                print(f"[ShellSession] Startup command: {c}")
                 session.run(c)
 
         # Cast state to dict for type safety
@@ -145,17 +151,24 @@ class ShellSessionMiddleware(AgentMiddleware):
         resources["shell_session"] = resources.get("shell_session", {})
         resources["shell_session"][self.cfg.shell_type] = session
 
+        print(f"[ShellSession] Session started and attached to state resources")
         return {"resources": resources}
 
     def after_agent(self, state: AgentState, runtime: Runtime) -> Dict[str, Any] | None:
         """Cleanup hook after agent completes."""
+        print("[ShellSession] Cleaning up shell sessions")
+
         # Cast state to dict for type safety
         state_dict = cast(Dict[str, Any], state)
         resources = state_dict.get("resources") or {}
         sess_map = resources.get("shell_session") or {}
-        for sess in sess_map.values():
+
+        for shell_type, sess in sess_map.items():
             try:
+                print(f"[ShellSession] Terminating {shell_type} session")
                 sess.terminate()
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"[ShellSession] Error terminating {shell_type} session: {e}")
+
+        print("[ShellSession] Cleanup complete")
         return None

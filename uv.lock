@@ -923,6 +923,13 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/1f/38/9a97f650b8cdb2ba0356d65aef9239f4a30db69ae44c30daa2cf8dd3f350/langsmith-0.4.39-py3-none-any.whl", hash = "sha256:48872eaaa449fc10781b5251f4fc05bc7d5c2d1d733a734566a96dd9166108b4", size = 397767, upload-time = "2025-11-01T00:06:16.433Z" },
 ]
 
+[package.optional-dependencies]
+otel = [
+    { name = "opentelemetry-api" },
+    { name = "opentelemetry-exporter-otlp-proto-http" },
+    { name = "opentelemetry-sdk" },
+]
+
 [[package]]
 name = "markdown-it-py"
 version = "4.0.0"
@@ -1836,6 +1843,7 @@ dependencies = [
     { name = "langchain" },
     { name = "langchain-openai" },
     { name = "langgraph" },
+    { name = "langsmith", extra = ["otel"] },
     { name = "pydantic" },
     { name = "python-dotenv" },
     { name = "rich" },
@@ -1863,6 +1871,7 @@ requires-dist = [
     { name = "langchain", specifier = ">=1.0.2" },
     { name = "langchain-openai", specifier = ">=1.0.1" },
     { name = "langgraph", specifier = ">=1.0.2" },
+    { name = "langsmith", extras = ["otel"], specifier = "==0.4.39" },
     { name = "pydantic", specifier = ">=2.12.3" },
     { name = "python-dotenv", specifier = ">=1.0.0" },
     { name = "rich", specifier = ">=13.7.1" },

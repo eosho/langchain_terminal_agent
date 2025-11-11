@@ -13,6 +13,7 @@ dependencies = [
   "typing-extensions>=4.9.0",
   "python-dotenv>=1.0.0",
   "rich>=13.7.1",
+  "langsmith[otel]==0.4.39",
 ]
 
 [project.urls]
