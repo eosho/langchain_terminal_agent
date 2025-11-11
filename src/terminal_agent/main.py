@@ -138,7 +138,6 @@ async def run() -> None:
 
         # Compose contextual prompt with working directory and shell type
         prompt = (
-            f"[USER]\n"
             f"Current working directory: {state.cwd}\n"
             f"Using {state.shell_type} shell.\n\n"
             f"{user_input}"
