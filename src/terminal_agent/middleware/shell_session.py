@@ -140,7 +140,9 @@ class ShellSessionMiddleware(AgentMiddleware):
 
         # Optional startup commands (e.g., set -e, cd, env)
         if self.cfg.startup_cmds:
-            print(f"[ShellSession] Running {len(self.cfg.startup_cmds)} startup commands")
+            print(
+                f"[ShellSession] Running {len(self.cfg.startup_cmds)} startup commands"
+            )
             for c in self.cfg.startup_cmds:
                 print(f"[ShellSession] Startup command: {c}")
                 session.run(c)
@@ -151,7 +153,7 @@ class ShellSessionMiddleware(AgentMiddleware):
         resources["shell_session"] = resources.get("shell_session", {})
         resources["shell_session"][self.cfg.shell_type] = session
 
-        print(f"[ShellSession] Session started and attached to state resources")
+        print("[ShellSession] Session started and attached to state resources")
         return {"resources": resources}
 
     def after_agent(self, state: AgentState, runtime: Runtime) -> Dict[str, Any] | None:

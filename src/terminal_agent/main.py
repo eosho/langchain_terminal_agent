@@ -147,13 +147,11 @@ async def run() -> None:
         try:
             with console.status("[bold cyan]Thinking…[/bold cyan]", spinner="dots"):
                 result = agent.invoke(
-                    {"messages": [{"role": "user", "content": prompt}]},
-                    config=config
+                    {"messages": [{"role": "user", "content": prompt}]}, config=config
                 )
         except Exception:
             logging.exception("Agent invocation failed.")
             continue
-
 
         # Attempt to fetch agent state for pending tool interrupts
         state_obj = None

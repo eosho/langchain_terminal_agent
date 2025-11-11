@@ -82,7 +82,9 @@ class ShellPolicyMiddleware(AgentMiddleware):
         self.total_input_tokens = 0
         self.total_output_tokens = 0
         self.total_calls = 0
-        print(f"[Policy] ShellPolicyMiddleware initialized with mode: {cfg.enforce_mode}")
+        print(
+            f"[Policy] ShellPolicyMiddleware initialized with mode: {cfg.enforce_mode}"
+        )
 
     def _first_token(self, cmd: str) -> str:
         """Return the first whitespace-delimited token (the verb) of a command."""
@@ -153,8 +155,12 @@ class ShellPolicyMiddleware(AgentMiddleware):
             self.total_calls += 1
 
             # Log current call
-            print(f"[Policy] Token usage: input={input_tokens} output={output_tokens} total={total_tokens}")
-            print(f"[Policy] Session totals: input={self.total_input_tokens} output={self.total_output_tokens} calls={self.total_calls}")
+            print(
+                f"[Policy] Token usage: input={input_tokens} output={output_tokens} total={total_tokens}"
+            )
+            print(
+                f"[Policy] Session totals: input={self.total_input_tokens} output={self.total_output_tokens} calls={self.total_calls}"
+            )
 
         return None
 
@@ -229,7 +235,9 @@ class ShellPolicyMiddleware(AgentMiddleware):
                             return None
                         elif mode == "warn_only":
                             # Return warning detail in interrupt_payload for downstream handling
-                            print("[Policy] Warning only mode - allowing command with warning")
+                            print(
+                                "[Policy] Warning only mode - allowing command with warning"
+                            )
                             return None
                         else:  # "defer_to_hitl"
                             # Let HITL or downstream handle the decision

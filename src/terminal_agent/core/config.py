@@ -68,10 +68,14 @@ class LLMConfig:
     azure_deployment: Optional[str] = os.getenv("AZURE_OPENAI_DEPLOYMENT")
 
     # Tracing
-    langsmith_enabled: bool = os.getenv("LANGSMITH_OTEL_ENABLED", "false").lower() == "true"
+    langsmith_enabled: bool = (
+        os.getenv("LANGSMITH_OTEL_ENABLED", "false").lower() == "true"
+    )
     langsmith_tracing: bool = os.getenv("LANGSMITH_TRACING", "false").lower() == "true"
     langsmith_api_key: Optional[str] = os.getenv("LANGSMITH_API_KEY")
-    otel_exporter_otlp_endpoint: Optional[str] = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
+    otel_exporter_otlp_endpoint: Optional[str] = os.getenv(
+        "OTEL_EXPORTER_OTLP_ENDPOINT"
+    )
 
 
 @dataclass
